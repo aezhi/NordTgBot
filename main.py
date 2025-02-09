@@ -1,23 +1,20 @@
 import asyncio
+
+from config import config
+
 from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.client.default import DefaultBotProperties
 
-bot = Bot(token='8077209075:AAFumjkYEHnp9rdxBXZSmbSRxD3ve2O-G_o')
-dp = Dispatcher()
-
-
-@dp.message(CommandStart())
-async def start(message: Message):
-    await message.answer('asda')
+from tg_bot.handlers.system import system_router
 
 
 async def main():
+    bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
+    dp = Dispatcher()
+
+    dp.include_router(system_router)
+
     await dp.start_polling(bot)
-    await bot.session.close()
 
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
