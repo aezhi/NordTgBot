@@ -16,7 +16,7 @@ async def main():
     dp = Dispatcher()
     dp.message.middleware(AntiFloodMiddleware(
         message_cooldown=config.MESSAGE_RATE_LIMIT,
-        mute_duration=config.MESSAGE_RATE_LIMIT),
+        mute_duration=config.BASIC_MUTE_DURATION),
     )
 
     dp.include_router(system_router)
