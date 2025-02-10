@@ -8,7 +8,7 @@ load_dotenv()
 @dataclass(frozen=True)
 class Config:
     BOT_TOKEN: str = getenv('BOT_TOKEN')
-    ADMIN_ID: tuple[int, ...] = tuple(map(int, getenv('ADMIN_ID').split(',')))
+    ADMIN_GROUP_ID: int = int(getenv('ADMIN_GROUP_ID'))
     MESSAGE_RATE_LIMIT: int = int(getenv('MESSAGE_RATE_LIMIT'))
     BASIC_MUTE_DURATION: int = int(getenv('BASIC_MUTE_DURATION'))
 

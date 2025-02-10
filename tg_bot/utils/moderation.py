@@ -6,8 +6,7 @@ from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 
 async def mute_user(bot, chat_id: int, user_id: int, mute_duration: int) -> None:
     """
-    Temporarily restrict a user from sending messages (mute) for `mute_duration` seconds.
-    Rely solely on Telegram's `until_date` to handle the unmute.
+
     """
 
     permissions = ChatPermissions(

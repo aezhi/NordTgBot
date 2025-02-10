@@ -5,12 +5,13 @@ from aiogram.client.default import DefaultBotProperties
 from config import config
 from tg_bot.handlers.system import system_router
 from tg_bot.handlers.user import user_router
+from tg_bot.handlers.admin import admin_router
 from tg_bot.middlewares.antiflood import AntiFloodMiddleware
 
 async def main():
     bot = Bot(
         token=config.BOT_TOKEN,
-        default=DefaultBotProperties(parse_mode='HTML')
+        default=DefaultBotProperties(parse_mode='HTML'),
     )
 
     dp = Dispatcher()
@@ -20,6 +21,7 @@ async def main():
     )
 
     dp.include_router(system_router)
+    # dp.include_router(admin_router)
     dp.include_router(user_router)
 
     await dp.start_polling(bot)
