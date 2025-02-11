@@ -45,4 +45,4 @@ async def send_help(message: Message):
 
 @user_router.message()
 async def echo_handler(message: Message) -> None:
-    await message.answer(f"Echo: {message.from_user.id}")
+    pass
