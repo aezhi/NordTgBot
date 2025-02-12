@@ -1,3 +1,6 @@
+#log.py
+# когда отправляешь несколько фото выдается мут
+
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -7,6 +10,7 @@ from tg_bot.handlers.system import system_router
 from tg_bot.handlers.user import user_router
 from tg_bot.handlers.admin import admin_router
 from tg_bot.middlewares.antiflood import AntiFloodMiddleware
+from tg_bot.middlewares.logging import LoggingMiddleware
 
 async def main():
     bot = Bot(
@@ -15,6 +19,8 @@ async def main():
     )
 
     dp = Dispatcher()
+
+    dp.update.outer_middleware(LoggingMiddleware())
     dp.message.middleware(AntiFloodMiddleware(
         message_cooldown=config.MESSAGE_RATE_LIMIT,
         mute_duration=config.BASIC_MUTE_DURATION),

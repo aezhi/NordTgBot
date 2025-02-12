@@ -1,7 +1,9 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from aiogram.types import ChatPermissions
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
+
+from log import log_chat_activity
 
 
 async def mute_user(bot, chat_id: int, user_id: int, mute_duration: int) -> None:
@@ -25,6 +27,11 @@ async def mute_user(bot, chat_id: int, user_id: int, mute_duration: int) -> None
             permissions=permissions,
             until_date=timedelta(seconds=mute_duration),
         )
-        print(f"User {user_id} is muted for {mute_duration} seconds (until_date={30}).")
+
+        log_chat_activity(
+            f'[User Muted] | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S+00:00')} '
+            f'| User ID: {user_id} muted in chat ID: {chat_id} for {mute_duration} seconds'
+        )
+
     except (TelegramBadRequest, TelegramForbiddenError) as e:
         print(f"[mute_user] Error while restricting user {user_id} in chat {chat_id}: {e}")
