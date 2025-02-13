@@ -1,8 +1,7 @@
 #log.py
 # когда отправляешь несколько фото выдается мут
 # отменить частные сообщения
-# предложка бот
-#
+
 
 import asyncio
 from aiogram import Bot, Dispatcher

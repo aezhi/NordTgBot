@@ -46,10 +46,10 @@ class AntiFloodMiddleware(BaseMiddleware):
                 if current_time - last_time < self.message_cooldown:
                     print(self.message_cooldown)
                     await mute_user(bot, chat_id, user_id, self.mute_duration)
-                    warning_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
+                    sent_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
 
                     await asyncio.sleep(10)
-                    await bot.delete_message(chat_id, warning_message.message_id)
+                    await sent_message.delete()
 
                 else:
                     self.last_message_time[(chat_id, user_id)] = current_time
