@@ -1,11 +1,11 @@
 import asyncio
 
-from aiogram import Router, F
+from config import config
+
+from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.exceptions import TelegramBadRequest
-
-from config import config
 
 user_router = Router()
 

@@ -9,4 +9,4 @@ class LoggingMiddleware(BaseMiddleware):
             log_chat_activity(event)
             return await handler(event, data)
         except Exception as e:
-            log_exception(str(e))
+            log_exception(e)

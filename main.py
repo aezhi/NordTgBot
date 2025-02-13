@@ -1,18 +1,17 @@
-#log.py
-# когда отправляешь несколько фото выдается мут
-# отменить частные сообщения
-
-
 import asyncio
+
+from config import config
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
-from config import config
-from tg_bot.handlers.system import system_router
 from tg_bot.handlers.user import user_router
 from tg_bot.handlers.admin import admin_router
-from tg_bot.middlewares.antiflood import AntiFloodMiddleware
+from tg_bot.handlers.system import system_router
+
 from tg_bot.middlewares.logging import LoggingMiddleware
+from tg_bot.middlewares.antiflood import AntiFloodMiddleware
+
 
 async def main():
     bot = Bot(
@@ -28,11 +27,12 @@ async def main():
         mute_duration=config.BASIC_MUTE_DURATION),
     )
 
+    dp.include_router(user_router)
     dp.include_router(system_router)
     # dp.include_router(admin_router)
-    dp.include_router(user_router)
 
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

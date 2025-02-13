@@ -8,10 +8,6 @@ from tg_bot.utils.moderation import mute_user
 
 
 class AntiFloodMiddleware(BaseMiddleware):
-    """
-
-    """
-
     def __init__(self, message_cooldown: int = 1, mute_duration: int = 30):
         super().__init__()
         self.message_cooldown = message_cooldown
@@ -44,7 +40,6 @@ class AntiFloodMiddleware(BaseMiddleware):
                 last_time = self.last_message_time.get((chat_id, user_id), 0)
 
                 if current_time - last_time < self.message_cooldown:
-                    print(self.message_cooldown)
                     await mute_user(bot, chat_id, user_id, self.mute_duration)
                     sent_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
 

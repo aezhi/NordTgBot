@@ -7,10 +7,6 @@ from log import log_chat_activity
 
 
 async def mute_user(bot, chat_id: int, user_id: int, mute_duration: int) -> None:
-    """
-
-    """
-
     permissions = ChatPermissions(
         can_send_messages=False,
         can_send_media_messages=False,

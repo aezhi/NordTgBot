@@ -1,7 +1,3 @@
-# лог удаления сообщений и их изменения
-# log exception проверить как работает с классом строк и Exception
-# добавить выкладку исключений на какой-нибудь сайт в реальном времени
-
 import os
 import sys
 
@@ -111,5 +107,6 @@ def log_chat_activity(event: Update | str) -> None:
     else:
         log_exception(f'[Uknown event] | {event}')
 
-def log_exception(e: str):
+
+def log_exception(e):
     logger.error(e)
