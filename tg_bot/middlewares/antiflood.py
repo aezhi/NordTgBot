@@ -17,6 +17,7 @@ class AntiFloodMiddleware(BaseMiddleware):
         self.message_cooldown = message_cooldown
         self.mute_duration = mute_duration
         self.last_message_time = {} # (chat_id: int, user_id: int) : current_time: time.time()
+        self.last_media_group_id = {} # (chat_id: int, user_id: int) : event.media_group_id
 
     async def __call__(self, handler, event, data):
         if isinstance(event, Message):
@@ -31,13 +32,21 @@ class AntiFloodMiddleware(BaseMiddleware):
                 if isinstance(await bot.get_chat_member(chat_id, user_id), (ChatMemberAdministrator, ChatMemberOwner)):
                     return await handler(event, data)
 
+                if event.media_group_id:
+                    last_mg_id = self.last_media_group_id.get((chat_id, user_id))
+
+                    if last_mg_id == event.media_group_id:
+                        return await handler(event, data)
+                    else:
+                        self.last_media_group_id[(chat_id, user_id)] = event.media_group_id
+
                 current_time = time.time()
                 last_time = self.last_message_time.get((chat_id, user_id), 0)
 
                 if current_time - last_time < self.message_cooldown:
                     print(self.message_cooldown)
                     await mute_user(bot, chat_id, user_id, self.mute_duration)
-                    warning_message = await event.reply('Ты отправляешь сообщения слишком часто!')
+                    warning_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
 
                     await asyncio.sleep(10)
                     await bot.delete_message(chat_id, warning_message.message_id)
