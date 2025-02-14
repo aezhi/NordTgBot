@@ -11,6 +11,7 @@ from tg_bot.handlers.system import system_router
 
 from tg_bot.middlewares.logging import LoggingMiddleware
 from tg_bot.middlewares.antiflood import AntiFloodMiddleware
+from tg_bot.middlewares.noprivate import BlockPrivateMessagesMiddleware
 
 
 async def main():
@@ -21,6 +22,7 @@ async def main():
 
     dp = Dispatcher()
 
+    dp.update.outer_middleware(BlockPrivateMessagesMiddleware())
     dp.update.outer_middleware(LoggingMiddleware())
     dp.message.middleware(AntiFloodMiddleware(
         message_cooldown=config.MESSAGE_RATE_LIMIT,

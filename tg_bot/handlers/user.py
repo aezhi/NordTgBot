@@ -17,6 +17,7 @@ async def report_message(message: Message):
 
         await asyncio.sleep(10)
         await sent_message.delete()
+        await message.delete()
         return
 
     reported_user = message.reply_to_message.from_user
