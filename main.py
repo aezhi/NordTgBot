@@ -5,13 +5,8 @@ from config import config
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
-from tg_bot.handlers.user import user_router
-from tg_bot.handlers.admin import admin_router
-from tg_bot.handlers.system import system_router
-
-from tg_bot.middlewares.logging import LoggingMiddleware
-from tg_bot.middlewares.antiflood import AntiFloodMiddleware
-from tg_bot.middlewares.noprivate import BlockPrivateMessagesMiddleware
+from tg_bot.handlers import *
+from tg_bot.middlewares import *
 
 
 async def main():
