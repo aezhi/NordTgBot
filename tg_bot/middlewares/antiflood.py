@@ -1,6 +1,8 @@
 import time
 import asyncio
 
+from log import logger
+
 from aiogram import BaseMiddleware
 from aiogram.types import Message, ChatMemberAdministrator, ChatMemberOwner
 
@@ -12,8 +14,8 @@ class AntiFloodMiddleware(BaseMiddleware):
         super().__init__()
         self.message_cooldown = message_cooldown
         self.mute_duration = mute_duration
-        self.last_message_time = {} # (chat_id: int, user_id: int) : current_time: time.time()
-        self.last_media_group_id = {} # (chat_id: int, user_id: int) : event.media_group_id
+        self.last_message_time: dict[tuple[int, int], time.time()] = {} # (chat_id. user_id) : current_time
+        self.last_media_group_id: dict[tuple[int, int], str] = {} # (chat_id, user_id) : event.media_group_id
 
     async def __call__(self, handler, event, data):
         if isinstance(event, Message):
@@ -40,11 +42,15 @@ class AntiFloodMiddleware(BaseMiddleware):
                 last_time = self.last_message_time.get((chat_id, user_id), 0)
 
                 if current_time - last_time < self.message_cooldown:
-                    await mute_user(bot, chat_id, user_id, self.mute_duration)
-                    sent_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
+                    try:
+                        await mute_user(bot, chat_id, user_id, self.mute_duration)
+                        sent_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
 
-                    await asyncio.sleep(10)
-                    await sent_message.delete()
+                        await asyncio.sleep(10)
+                        await sent_message.delete()
+
+                    except Exception as e:
+                        logger.critical(e)
 
                 else:
                     self.last_message_time[(chat_id, user_id)] = current_time

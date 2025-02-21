@@ -1,5 +1,6 @@
 import asyncio
 
+from log import logger
 from config import config
 
 from aiogram import Bot, Dispatcher
@@ -10,6 +11,7 @@ from tg_bot.middlewares import *
 
 
 async def main():
+
     bot = Bot(
         token=config.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode='HTML'),
@@ -28,7 +30,11 @@ async def main():
     dp.include_router(system_router)
     # dp.include_router(admin_router)
 
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == "__main__":

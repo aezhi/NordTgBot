@@ -5,7 +5,6 @@ from config import config
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
-from aiogram.exceptions import TelegramBadRequest
 
 user_router = Router()
 
@@ -20,17 +19,17 @@ async def report_message(message: Message):
         await message.delete()
         return
 
-    reported_user = message.reply_to_message.from_user
     reporter = message.from_user
+    reported_user = message.reply_to_message.from_user
 
+    reporter_user_name = f'@{reporter.username}' if reporter.username else f'<b>{reporter.full_name}</b>'
     reported_user_name = f'@{reported_user.username}' if reported_user.username else f'<b>{reported_user.full_name}</b>'
-    reporter_name = f'@{reporter.username}' if reporter.username else f'<b>{reporter.full_name}</b>'
 
     report_text = (
         f'🚨 <b>Жалоба на сообщение</b>\n'
         f'👤 <b>Отправитель:</b> {reported_user_name} (ID: {reported_user.id})\n'
         f'📩 <b>Текст:</b> {message.reply_to_message.text}\n'
-        f'🆔 <b>Жалобу подал:</b> {reporter_name} (ID: {reporter.id})'
+        f'🆔 <b>Жалобу подал:</b> {reporter_user_name} (ID: {reporter.id})'
     )
 
     await message.bot.send_message(config.ADMIN_GROUP_ID, report_text)
@@ -67,7 +66,7 @@ async def send_help(message: Message):
         '🔹 */rules* – 📜 Показывает правила чата. Ознакомьтесь с ними, чтобы избежать нарушений.\n\n'
         '🔹 */report* – 🚨 Отправляет жалобу на сообщение. Используйте эту команду, ответив на сообщение, '
         'которое нарушает правила. Администрация рассмотрит вашу жалобу.\n\n'
-        '📌 Если у вас есть вопросы или предложения, свяжитесь с администрацией.'
+        '📌 Если у вас есть вопросы или предложения, свяжитесь с администрацией через @NordModernWarSuggestionsBot.'
     )
 
     sent_message = await message.reply(help_text, parse_mode='Markdown')

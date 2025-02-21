@@ -99,14 +99,10 @@ def log_chat_activity(event: Update | str) -> None:
                     )
 
         else:
-            log_exception(f'[Uknown event] | {event}')
+            logger.error(f'Not a message event! | {event}')
 
     elif isinstance(event, str):
         logger.info(event)
 
     else:
-        log_exception(f'[Uknown event] | {event}')
-
-
-def log_exception(e):
-    logger.error(e)
+        logger.error(f'Uknown event! | {event}')
