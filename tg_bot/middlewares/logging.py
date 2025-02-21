@@ -1,6 +1,6 @@
 from aiogram import BaseMiddleware
 
-from log import log_chat_activity
+from tg_bot.log import log_chat_activity
 
 
 class LoggingMiddleware(BaseMiddleware):

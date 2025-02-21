@@ -1,11 +1,11 @@
 import asyncio
 
-from log import logger
 from config import config
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
+from tg_bot.log import logger
 from tg_bot.handlers import *
 from tg_bot.middlewares import *
 

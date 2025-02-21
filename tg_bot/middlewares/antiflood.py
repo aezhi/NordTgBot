@@ -1,11 +1,10 @@
 import time
 import asyncio
 
-from log import logger
-
 from aiogram import BaseMiddleware
 from aiogram.types import Message, ChatMemberAdministrator, ChatMemberOwner
 
+from tg_bot.log import logger
 from tg_bot.utils.moderation import mute_user
 
 

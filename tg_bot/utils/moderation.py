@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from log import logger, log_chat_activity
+from tg_bot.log import logger, log_chat_activity
 
 from aiogram.types import ChatPermissions
 

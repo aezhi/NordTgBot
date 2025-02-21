@@ -4,7 +4,7 @@ import sys
 from loguru import logger
 from aiogram.types import Update
 
-os.makedirs('logs', exist_ok=True)
+os.makedirs('../logs', exist_ok=True)
 
 logger.remove()
 logger.add(
