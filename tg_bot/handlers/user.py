@@ -10,7 +10,7 @@ user_router = Router()
 
 
 @user_router.message(Command('report'))
-async def report_message(message: Message):
+async def report_chat_message(message: Message):
     if not message.reply_to_message:
         sent_message = await message.reply('⚠️ Вы должны ответить на сообщение, чтобы пожаловаться!')
 
@@ -37,7 +37,7 @@ async def report_message(message: Message):
 
 
 @user_router.message(Command('rules'))
-async def send_rules(message: Message):
+async def send_rules_message(message: Message):
     rules_text = (
         '📜 *Правила Telegram-канала*\n\n'
         '🚫 *Запрещено:*\n\n'
@@ -59,7 +59,7 @@ async def send_rules(message: Message):
 
 
 @user_router.message(Command('help'))
-async def send_help(message: Message):
+async def send_help_message(message: Message):
     help_text = (
         '👋 Добро пожаловать в чат канала *NORD | Modern War | Arma 3*!\n\n'
         '❓ *Справка по командам*\n\n'
@@ -77,5 +77,5 @@ async def send_help(message: Message):
 
 
 @user_router.message()
-async def echo_handler(message: Message):
+async def handle_message(message: Message):
    pass

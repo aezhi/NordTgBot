@@ -7,7 +7,7 @@ system_router = Router()
 
 
 @system_router.message(F.new_chat_members)
-async def remove_join_message(message: Message):
+async def remove_user_join_message(message: Message):
     try:
         await message.delete()
 
@@ -16,7 +16,7 @@ async def remove_join_message(message: Message):
 
 
 @system_router.message(F.left_chat_member)
-async def remove_left_message(message: Message):
+async def remove_user_left_message(message: Message):
     try:
         await message.delete()
 

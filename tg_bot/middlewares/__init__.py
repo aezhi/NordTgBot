@@ -1,5 +1,5 @@
 from .logging import LoggingMiddleware
-from .antiflood import AntiFloodMiddleware
+from .antiflood import ThrottlingMiddleware
 from .noprivate import BlockPrivateMessagesMiddleware
 
-__all__ = ['LoggingMiddleware', 'AntiFloodMiddleware', 'BlockPrivateMessagesMiddleware']
+__all__ = ['LoggingMiddleware', 'ThrottlingMiddleware', 'BlockPrivateMessagesMiddleware']

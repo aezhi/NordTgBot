@@ -1,6 +1,8 @@
 import os
 import sys
 
+from config import Config
+
 from loguru import logger
 from aiogram.types import Update
 
@@ -11,7 +13,7 @@ logger.add(
     sink='logs/chat_activity.log',
     format='[+] {message}',
     level='INFO',
-    rotation='10 MB',
+    rotation=f'{Config.LOG_ROTATION_SIZE} MB',
     compression='zip',
     encoding='utf-8',
 )
@@ -19,7 +21,7 @@ logger.add(
     sink='logs/exceptions.log',
     format='[+] {time:MMM D, YYYY - HH:mm:ss} | {file} | line: {line} | {level} | {message}\n',
     level='ERROR',
-    rotation='10 MB',
+    rotation=f'{Config.LOG_ROTATION_SIZE} MB',
     compression='zip',
     encoding='utf-8',
 )
@@ -99,10 +101,7 @@ def log_chat_activity(event: Update | str) -> None:
                     )
 
         else:
-            logger.error(f'Not a message event! | {event}')
-
-    elif isinstance(event, str):
-        logger.info(event)
+            logger.info(event)
 
     else:
         logger.error(f'Uknown event! | {event}')

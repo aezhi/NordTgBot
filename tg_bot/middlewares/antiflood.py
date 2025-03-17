@@ -1,57 +1,105 @@
-import time
-import asyncio
+from __future__ import annotations
+
+from datetime import timedelta
+from typing import TYPE_CHECKING, Any, Final, TypeVar
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, ChatMemberAdministrator, ChatMemberOwner
+from aiogram.dispatcher.flags import get_flag
+from aiogram.types import CallbackQuery, ChatMemberUpdated, TelegramObject, Update, User
 
-from tg_bot.log import logger
-from tg_bot.utils.moderation import mute_user
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from redis.asyncio.client import Redis
+    from redis.typing import ExpiryT
+
+DEFAULT_RATE_LIMIT: Final[int] = 1000  # milliseconds cooldown
+KeyValueT = TypeVar("KeyValueT", bound=int | str)
 
 
-class AntiFloodMiddleware(BaseMiddleware):
-    def __init__(self, message_cooldown: int = 1, mute_duration: int = 30):
-        super().__init__()
-        self.message_cooldown = message_cooldown
-        self.mute_duration = mute_duration
-        self.last_message_time: dict[tuple[int, int], time.time()] = {} # (chat_id. user_id) : current_time
-        self.last_media_group_id: dict[tuple[int, int], str] = {} # (chat_id, user_id) : event.media_group_id
+class TTLCache:
+    def __init__(self, redis: Redis) -> None:
+        self.redis = redis
 
-    async def __call__(self, handler, event, data):
-        if isinstance(event, Message):
-            if event.chat.type in ('group', 'supergroup'):
-                chat_id = event.chat.id
-                user_id = event.from_user.id
-                bot = data['bot']
+    @classmethod
+    def key(cls, object_id: KeyValueT, throttle_key: str = "-") -> str:
+        return f"{cls.__name__}:{object_id}:{throttle_key}"
 
-                if event.sender_chat:
-                    return await handler(event, data)
+    async def get(self, key: KeyValueT, throttle_key: str = "-") -> bytes | None:
+        return await self.redis.get(self.key(key, throttle_key))
 
-                if isinstance(await bot.get_chat_member(chat_id, user_id), (ChatMemberAdministrator, ChatMemberOwner)):
-                    return await handler(event, data)
+    async def set(self, key: KeyValueT, time_ms: ExpiryT, value: Any, throttle_key: str = "-") -> bool:
+        return await self.redis.psetex(self.key(key, throttle_key), time_ms, value)
 
-                if event.media_group_id:
-                    last_mg_id = self.last_media_group_id.get((chat_id, user_id))
 
-                    if last_mg_id == event.media_group_id:
-                        return await handler(event, data)
-                    else:
-                        self.last_media_group_id[(chat_id, user_id)] = event.media_group_id
+class LeakyBucket:
+    def __init__(self, redis: Redis, limit: int, period: timedelta) -> None:
+        self.redis = redis
+        self.limit = limit
+        self.period = period
 
-                current_time = time.time()
-                last_time = self.last_message_time.get((chat_id, user_id), 0)
+    @classmethod
+    def key(cls, object_id: KeyValueT) -> str:
+        return f"{cls.__name__}:{object_id}"
 
-                if current_time - last_time < self.message_cooldown:
-                    try:
-                        await mute_user(bot, chat_id, user_id, self.mute_duration)
-                        sent_message = await event.reply('🚨Ты отправляешь сообщения слишком часто!')
+    async def is_limit_reached(self, object_id: KeyValueT, bucket_decrement: int = 1) -> bool:
+        key = self.key(object_id)
 
-                        await asyncio.sleep(10)
-                        await sent_message.delete()
+        if await self.redis.setnx(key, self.limit):
+            await self.redis.expire(key, int(self.period.total_seconds()))
 
-                    except Exception as e:
-                        logger.critical(e)
+        bucket_value = await self.redis.get(key) or 0
 
-                else:
-                    self.last_message_time[(chat_id, user_id)] = current_time
+        if int(bucket_value) > 0:
+            await self.redis.decrby(key, bucket_decrement)
+            return False
+
+        return True
+
+
+class ThrottlingMiddleware(BaseMiddleware):
+    def __init__(self, redis: Redis) -> None:
+        self.ttl_cache = TTLCache(redis)
+        self.leaky_bucket = LeakyBucket(redis, 4, timedelta(seconds=7))
+
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
+        event: Update,
+        data: dict[str, Any],
+    ) -> Any:
+        user: User = data["event_from_user"]
+
+        if isinstance(event, ChatMemberUpdated):
+            return await handler(event, data)
+
+        throttle_key = get_flag(data, "throttle_key", default="-")
+        throttle_time = get_flag(data, "throttle_time", default=DEFAULT_RATE_LIMIT)
+        bucket_decrement = get_flag(data, "bucket_decrement", default=1)
+
+        if isinstance(throttle_time, timedelta):
+            throttle_time = int(throttle_time.total_seconds() * 1000)  # Convert to milliseconds
+
+        if await self.ttl_cache.get(user.id, throttle_key):
+            if isinstance(event, CallbackQuery):
+                await event.answer("⏳ Too fast!", show_alert=True)
+
+            if throttle_key == "-":
+                await self.ttl_cache.set(
+                    key=self.ttl_cache.key(user.id),
+                    time_ms=throttle_time,
+                    value=throttle_time,
+                    throttle_key=throttle_key,
+                )
+
+            return None
+
+        await self.ttl_cache.set(key=user.id, time_ms=throttle_time, value=throttle_time, throttle_key=throttle_key)
+
+        if await self.leaky_bucket.is_limit_reached(user.id, bucket_decrement=bucket_decrement):
+            if isinstance(event, CallbackQuery):
+                await event.answer("🪣 Too fast!", show_alert=True)
+
+            return None
 
         return await handler(event, data)
